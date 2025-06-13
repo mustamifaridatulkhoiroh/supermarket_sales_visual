@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Visualisasi</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container my-4">
+    <h1 class="mb-4 text-center">DASHBOARD VISUALISASI</h1>
+
+    <!-- Switch Fact Schema -->
+    <form method="get" class="mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-2">
+                <label for="factSchema" class="form-label fw-bold">Pilih Schema:</label>
+            </div>
+            <div class="col-md-4">
+                <select name="fact_schema" id="factSchema" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- Semua --</option>
+                    {% for schema in all_fact_schemas %}
+                        <option value="{{ schema }}" {% if selected_fact_schema == schema %}selected{% endif %}>{{ schema }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </form>
+
+    <!-- ==================== FACT SALES ===================== -->
+    {% if selected_fact_schema == "FactSales" or not selected_fact_schema %}
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+
+        <div class="col">
+            <div class="card shadow p-3">
+                <h5>Total Sales per Date</h5>
+                <canvas id="salesByDate"></canvas>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card shadow p-3">
+                <h5>Total Quantity per Date</h5>
+                <canvas id="quantityByDate"></canvas>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card shadow p-3">
+                <h5>Sales per Product Line</h5>
+                <canvas id="salesByProductLine"></canvas>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card shadow p-3">
+                <h5>Sales per Branch</h5>
+                <canvas id="salesByBranch"></canvas>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card shadow p-3">
+                <h5>Sales by Payment Method</h5>
+                <canvas id="salesByPayment"></canvas>
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+    <!-- ==================== PRODUCT PERFORMANCE ===================== -->
+    {% if selected_fact_schema == "FactProductPerform" %}
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+
+        <div class="col">
+            <div class="card shadow p-3">
+                <h5>Average Rating per Product Line</h5>
+                <canvas id="avgRatingProductLine"></canvas>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card shadow p-3">
+                <h5>Average Rating per Branch</h5>
+                <canvas id="avgRatingBranch"></canvas>
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+    <!-- ==================== CUSTOMER BEHAVIOR ===================== -->
+    {% if selected_fact_schema == "FactCustomerBehavior" %}
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+
+        <div class="col">
+            <div class="card shadow p-3">
+                <h5>Quantity by Customer Type</h5>
+                <canvas id="quantityByCustomerType"></canvas>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card shadow p-3">
+                <h5>Average Rating by Customer Type</h5>
+                <canvas id="avgRatingByCustomerType"></canvas>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card shadow p-3">
+                <h5>Quantity by Gender</h5>
+                <canvas id="quantityByGender"></canvas>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card shadow p-3">
+                <h5>Average Rating by Gender</h5>
+                <canvas id="avgRatingByGender"></canvas>
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- ==================== JS CHART.JS ===================== -->
+<script>
+    {% if selected_fact_schema == "FactSales" or not selected_fact_schema %}
+    new Chart(document.getElementById("salesByDate"), {
+        type: 'line',
+        data: {
+            labels: {{ labels_sales_by_date|safe }},
+            datasets: [{
+                label: 'Total Sales',
+                data: {{ data_total_sales|safe }},
+                borderColor: 'rgba(75, 192, 192, 1)',
+                fill: true
+            }]
+        }
+    });
+
+    new Chart(document.getElementById("quantityByDate"), {
+        type: 'bar',
+        data: {
+            labels: {{ labels_sales_by_date|safe }},
+            datasets: [{
+                label: 'Quantity',
+                data: {{ data_total_quantity|safe }},
+                backgroundColor: 'rgba(255, 159, 64, 0.7)'
+            }]
+        }
+    });
+
+    new Chart(document.getElementById("salesByProductLine"), {
+        type: 'pie',
+        data: {
+            labels: {{ labels_product_line_sales|safe }},
+            datasets: [{
+                data: {{ data_product_line_sales|safe }},
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+            }]
+        }
+    });
+
+    new Chart(document.getElementById("salesByBranch"), {
+        type: 'bar',
+        data: {
+            labels: {{ labels_branch_sales|safe }},
+            datasets: [{
+                label: 'Sales',
+                data: {{ data_branch_sales|safe }},
+                backgroundColor: 'rgba(153, 102, 255, 0.7)'
+            }]
+        }
+    });
+
+    new Chart(document.getElementById("salesByPayment"), {
+        type: 'doughnut',
+        data: {
+            labels: {{ labels_payment_sales|safe }},
+            datasets: [{
+                data: {{ data_payment_sales|safe }},
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56']
+            }]
+        }
+    });
+    {% endif %}
+
+    {% if selected_fact_schema == "FactProductPerform" %}
+    new Chart(document.getElementById("avgRatingProductLine"), {
+        type: 'bar',
+        data: {
+            labels: {{ labels_prod_perf_product_line|safe }},
+            datasets: [{
+                label: 'Avg Rating',
+                data: {{ data_avg_rating_prod_perf|safe }},
+                backgroundColor: 'rgba(255, 99, 132, 0.7)'
+            }]
+        }
+    });
+
+    new Chart(document.getElementById("avgRatingBranch"), {
+        type: 'bar',
+        data: {
+            labels: {{ labels_prod_perf_branch|safe }},
+            datasets: [{
+                label: 'Avg Rating',
+                data: {{ data_avg_rating_branch_pp|safe }},
+                backgroundColor: 'rgba(54, 162, 235, 0.7)'
+            }]
+        }
+    });
+    {% endif %}
+
+    {% if selected_fact_schema == "FactCustomerBehavior" %}
+    new Chart(document.getElementById("quantityByCustomerType"), {
+        type: 'bar',
+        data: {
+            labels: {{ labels_customer_type_behavior|safe }},
+            datasets: [{
+                label: 'Quantity',
+                data: {{ data_customer_type_quantity|safe }},
+                backgroundColor: 'rgba(255, 205, 86, 0.7)'
+            }]
+        }
+    });
+
+    new Chart(document.getElementById("avgRatingByCustomerType"), {
+        type: 'bar',
+        data: {
+            labels: {{ labels_customer_type_behavior|safe }},
+            datasets: [{
+                label: 'Avg Rating',
+                data: {{ data_customer_type_avg_rating|safe }},
+                backgroundColor: 'rgba(54, 162, 235, 0.7)'
+            }]
+        }
+    });
+
+    new Chart(document.getElementById("quantityByGender"), {
+        type: 'bar',
+        data: {
+            labels: {{ labels_gender_quantity|safe }},
+            datasets: [{
+                label: 'Quantity',
+                data: {{ data_gender_quantity|safe }},
+                backgroundColor: 'rgba(153, 102, 255, 0.7)'
+            }]
+        }
+    });
+
+    new Chart(document.getElementById("avgRatingByGender"), {
+        type: 'bar',
+        data: {
+            labels: {{ labels_gender_rating|safe }},
+            datasets: [{
+                label: 'Avg Rating',
+                data: {{ data_avg_rating_gender|safe }},
+                backgroundColor: 'rgba(255, 159, 64, 0.7)'
+            }]
+        }
+    });
+    {% endif %}
+</script>
+
+</body>
+</html>

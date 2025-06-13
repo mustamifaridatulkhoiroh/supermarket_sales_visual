@@ -1,0 +1,4 @@
+payment_type,payment_method_id
+Credit card,1
+Cash,2
+Ewallet,3
